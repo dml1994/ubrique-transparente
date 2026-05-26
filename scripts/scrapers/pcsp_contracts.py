@@ -84,31 +84,20 @@ def _text(el: Optional[ET.Element], *paths: str, ns=NS) -> Optional[str]:
 
 
 def _is_ubrique_entry(entry: ET.Element) -> bool:
-    """True si Ubrique es el órgano de contratación (comprador) de la entry.
+    """True si el Ayuntamiento de Ubrique (NIF P1103800G) es el órgano contratante.
 
-    Busca por nombre local del elemento (ignorando namespace) para cubrir
-    variaciones entre los feeds de licitaciones y contratos menores.
+    Busca el NIF o el código DIR3 únicamente dentro del bloque ContractingParty,
+    por nombre local del tag para ser agnóstico al namespace exacto.
+    Solo se usa el identificador numérico — nunca el nombre textual — para
+    evitar falsos positivos con contratos de otras entidades relacionadas con
+    el municipio (p.ej. Diputación de Cádiz que contrata en Ubrique).
     """
-    contracting_parties = [
-        el for el in entry.iter()
-        if el.tag.split("}")[-1] == "ContractingParty"
-    ]
-
-    if contracting_parties:
-        for cp in contracting_parties:
-            for el in cp.iter():
-                local = el.tag.split("}")[-1]
-                if local == "ID" and el.text and UBRIQUE_NIF in el.text:
-                    return True
-                if local == "Name" and el.text and "ubrique" in el.text.lower():
-                    return True
-    else:
-        # Fallback: estructura sin ContractingParty explícito
-        cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
-        for id_el in entry.iter(f"{{{cbc}}}ID"):
-            if id_el.text and UBRIQUE_NIF in id_el.text:
-                return True
-
+    for el in entry.iter():
+        if el.tag.split("}")[-1] == "ContractingParty":
+            for child in el.iter():
+                if child.tag.split("}")[-1] == "ID" and child.text:
+                    if UBRIQUE_NIF in child.text or UBRIQUE_DIR3 in child.text:
+                        return True
     return False
 
 
