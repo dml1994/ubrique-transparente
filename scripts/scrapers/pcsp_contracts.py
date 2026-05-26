@@ -86,19 +86,30 @@ def _text(el: Optional[ET.Element], *paths: str, ns=NS) -> Optional[str]:
 def _is_ubrique_entry(entry: ET.Element) -> bool:
     """True si el Ayuntamiento de Ubrique (NIF P1103800G) es el órgano contratante.
 
-    Busca el NIF o el código DIR3 únicamente dentro del bloque ContractingParty,
-    por nombre local del tag para ser agnóstico al namespace exacto.
-    Solo se usa el identificador numérico — nunca el nombre textual — para
-    evitar falsos positivos con contratos de otras entidades relacionadas con
-    el municipio (p.ej. Diputación de Cádiz que contrata en Ubrique).
+    Estrategia: el NIF/DIR3 debe aparecer en algún cbc:ID de la entry
+    pero NO dentro de bloques de adjudicatario (WinningParty, ContractorParty…),
+    lo que indicaría que Ubrique recibe el dinero en lugar de pagarlo.
     """
-    for el in entry.iter():
-        if el.tag.split("}")[-1] == "ContractingParty":
-            for child in el.iter():
-                if child.tag.split("}")[-1] == "ID" and child.text:
-                    if UBRIQUE_NIF in child.text or UBRIQUE_DIR3 in child.text:
-                        return True
-    return False
+    cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
+    IDENTIFIERS = (UBRIQUE_NIF, UBRIQUE_DIR3)
+
+    def contains_ubrique(root: ET.Element) -> bool:
+        return any(
+            el.text and any(ident in el.text for ident in IDENTIFIERS)
+            for el in root.iter(f"{{{cbc}}}ID")
+        )
+
+    if not contains_ubrique(entry):
+        return False
+
+    # Rechazar si el NIF aparece exclusivamente como adjudicatario
+    awardee_tags = {"WinningParty", "ContractorParty", "EconomicOperatorParty"}
+    nif_in_awardee = any(
+        contains_ubrique(el)
+        for el in entry.iter()
+        if el.tag.split("}")[-1] in awardee_tags
+    )
+    return not nif_in_awardee
 
 
 def _parse_awarded_to(entry: ET.Element) -> Optional[str]:
