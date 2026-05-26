@@ -86,54 +86,31 @@ def _text(el: Optional[ET.Element], *paths: str, ns=NS) -> Optional[str]:
 def _is_ubrique_entry(entry: ET.Element) -> bool:
     """True si el Ayuntamiento de Ubrique (NIF P1103800G) es el órgano contratante.
 
-    Estrategia: el NIF/DIR3 debe aparecer en algún cbc:ID de la entry
-    pero NO dentro de bloques de adjudicatario (WinningParty, ContractorParty…),
-    lo que indicaría que Ubrique recibe el dinero en lugar de pagarlo.
+    El XML real de la PCSP usa LocatedContractingParty (no ContractingParty).
+    Buscamos el NIF o DIR3 únicamente dentro de ese bloque por nombre local,
+    para no confundir con entradas donde Ubrique aparece como municipio
+    beneficiario de contratos de la Diputación u otras entidades.
     """
     cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
     IDENTIFIERS = (UBRIQUE_NIF, UBRIQUE_DIR3)
 
-    def contains_ubrique(root: ET.Element) -> bool:
-        return any(
-            el.text and any(ident in el.text for ident in IDENTIFIERS)
-            for el in root.iter(f"{{{cbc}}}ID")
-        )
-
-    if not contains_ubrique(entry):
-        return False
-
-    # Rechazar si el NIF aparece exclusivamente como adjudicatario
-    awardee_tags = {"WinningParty", "ContractorParty", "EconomicOperatorParty"}
-    nif_in_awardee = any(
-        contains_ubrique(el)
-        for el in entry.iter()
-        if el.tag.split("}")[-1] in awardee_tags
-    )
-    return not nif_in_awardee
+    for el in entry.iter():
+        if el.tag.split("}")[-1] == "LocatedContractingParty":
+            for child in el.iter(f"{{{cbc}}}ID"):
+                if child.text and any(ident in child.text for ident in IDENTIFIERS):
+                    return True
+    return False
 
 
 def _parse_awarded_to(entry: ET.Element) -> Optional[str]:
-    """Extrae el nombre de la empresa adjudicataria buscando por nombre local."""
+    """Extrae el nombre de la empresa adjudicataria desde TenderResult/WinningParty."""
+    cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
 
-    def _local(el: ET.Element) -> str:
-        return el.tag.split("}")[-1]
-
-    # Licitaciones: TenderResult → WinningParty → Name
     for el in entry.iter():
-        if _local(el) == "TenderResult":
-            for child in el.iter():
-                if _local(child) == "WinningParty":
-                    for sub in child.iter():
-                        if _local(sub) == "Name" and sub.text:
-                            return sub.text.strip()
-
-    # Contratos menores: ContractorParty → Name
-    for el in entry.iter():
-        if _local(el) == "ContractorParty":
-            for child in el.iter():
-                if _local(child) == "Name" and child.text:
+        if el.tag.split("}")[-1] == "WinningParty":
+            for child in el.iter(f"{{{cbc}}}Name"):
+                if child.text:
                     return child.text.strip()
-
     return None
 
 
