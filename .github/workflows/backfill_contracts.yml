@@ -39,7 +39,6 @@ jobs:
       matrix:
         year: ${{ fromJson(needs.prepare.outputs.years) }}
       fail-fast: false
-      max-parallel: 3
 
     steps:
       - name: Checkout
