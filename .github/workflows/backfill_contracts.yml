@@ -34,7 +34,7 @@ jobs:
     name: Año ${{ matrix.year }}
     needs: prepare
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     strategy:
       matrix:
         year: ${{ fromJson(needs.prepare.outputs.years) }}
