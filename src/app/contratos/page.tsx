@@ -147,8 +147,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-1/3">Título</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Órgano contratante</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-2/5">Título</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Adjudicataria</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Importe</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Tipo</th>
@@ -176,9 +175,6 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                           Ver en PCSP ↗
                         </a>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                      Ayto. de Ubrique
                     </td>
                     <td className="px-4 py-3 text-gray-700 max-w-40">
                       <span className="line-clamp-2">
