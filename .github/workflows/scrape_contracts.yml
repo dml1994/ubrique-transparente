@@ -6,12 +6,8 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
-      backfill:
-        description: "Carga histórica (2018 hasta hoy)"
-        type: boolean
-        default: false
-      years:
-        description: "Años específicos a procesar (ej: 2024 2025)"
+      year:
+        description: "Año a procesar (vacío = año actual)"
         type: string
         default: ""
 
@@ -19,7 +15,7 @@ jobs:
   scrape:
     name: Descargar y procesar contratos PCSP
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -39,10 +35,8 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
-            python scripts/scrapers/pcsp_contracts.py --backfill
-          elif [ -n "${{ github.event.inputs.years }}" ]; then
-            python scripts/scrapers/pcsp_contracts.py --years ${{ github.event.inputs.years }}
+          if [ -n "${{ github.event.inputs.year }}" ]; then
+            python scripts/scrapers/pcsp_contracts.py --years ${{ github.event.inputs.year }}
           else
             python scripts/scrapers/pcsp_contracts.py
           fi

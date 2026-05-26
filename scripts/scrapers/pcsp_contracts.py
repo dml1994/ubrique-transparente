@@ -84,16 +84,39 @@ def _text(el: Optional[ET.Element], *paths: str, ns=NS) -> Optional[str]:
 
 
 def _is_ubrique_entry(entry: ET.Element) -> bool:
-    """True si la entry pertenece al Ayuntamiento de Ubrique."""
-    # Busca en el bloque ContractingParty → Party → PartyIdentification → ID
-    for id_el in entry.iter("{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}ID"):
-        if id_el.text and UBRIQUE_NIF in id_el.text:
-            return True
-    # Fallback: busca por nombre
-    for name_el in entry.iter("{urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2}Name"):
-        if name_el.text and "ubrique" in name_el.text.lower():
-            return True
+    """True si Ubrique es el órgano de contratación (comprador) de la entry."""
+    cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
+    cac = "urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2"
+
+    for cp in entry.iter(f"{{{cac}}}ContractingParty"):
+        for id_el in cp.iter(f"{{{cbc}}}ID"):
+            if id_el.text and UBRIQUE_NIF in id_el.text:
+                return True
+        for name_el in cp.iter(f"{{{cbc}}}Name"):
+            if name_el.text and "ubrique" in name_el.text.lower():
+                return True
     return False
+
+
+def _parse_awarded_to(entry: ET.Element) -> Optional[str]:
+    """Extrae el nombre de la empresa adjudicataria."""
+    cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
+    cac = "urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2"
+
+    # Licitaciones: TenderResult/WinningParty
+    for tr in entry.iter(f"{{{cac}}}TenderResult"):
+        for wp in tr.iter(f"{{{cac}}}WinningParty"):
+            for name in wp.iter(f"{{{cbc}}}Name"):
+                if name.text:
+                    return name.text.strip()
+
+    # Contratos menores: ContractorParty
+    for cp in entry.iter(f"{{{cac}}}ContractorParty"):
+        for name in cp.iter(f"{{{cbc}}}Name"):
+            if name.text:
+                return name.text.strip()
+
+    return None
 
 
 def _parse_amount(entry: ET.Element) -> Optional[float]:
@@ -151,11 +174,7 @@ def parse_entry(entry: ET.Element, feed_type: str) -> Optional[dict]:
         break
 
     # Empresa adjudicataria
-    awarded_to = None
-    for el in entry.iter(f"{{{cbc}}}Name"):
-        parent_tag = el.tag
-        awarded_to = el.text
-        break
+    awarded_to = _parse_awarded_to(entry)
 
     # Tipo de contrato
     contract_type = None
