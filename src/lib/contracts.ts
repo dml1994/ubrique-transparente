@@ -102,14 +102,18 @@ export async function getContractStats() {
   return stats;
 }
 
-export async function getDistinctYears(): Promise<number[]> {
+export async function getYearStats(): Promise<Array<{ year: number; total: number; amount: number }>> {
   const result = await db.execute(
-    sql`SELECT DISTINCT EXTRACT(YEAR FROM published_date)::int AS year
+    sql`SELECT
+          EXTRACT(YEAR FROM published_date)::int AS year,
+          COUNT(*)::int                          AS total,
+          COALESCE(SUM(amount), 0)::float        AS amount
         FROM contracts
         WHERE published_date IS NOT NULL
+        GROUP BY year
         ORDER BY year DESC`
   );
-  return (result.rows as Array<{ year: number }>).map((r) => r.year);
+  return result.rows as Array<{ year: number; total: number; amount: number }>;
 }
 
 export async function getDistinctTypes(): Promise<string[]> {

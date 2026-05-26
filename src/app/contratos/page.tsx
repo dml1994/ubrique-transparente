@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import {
   getContracts,
   getContractStats,
-  getDistinctYears,
+  getYearStats,
   getDistinctTypes,
   labelContractType,
   type ContractsFilter,
@@ -40,11 +40,11 @@ type PageProps = {
 export default async function ContratosPage({ searchParams }: PageProps) {
   const filters = await searchParams;
 
-  const [{ rows, total, page, totalPages }, stats, years, typesCodes] =
+  const [{ rows, total, page, totalPages }, stats, yearStats, typesCodes] =
     await Promise.all([
       getContracts(filters),
       getContractStats(),
-      getDistinctYears(),
+      getYearStats(),
       getDistinctTypes(),
     ]);
 
@@ -87,9 +87,45 @@ export default async function ContratosPage({ searchParams }: PageProps) {
         </div>
       </div>
 
+      {/* Selector de año */}
+      <div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Filtrar por año</p>
+        <div className="flex flex-wrap gap-3">
+          {yearStats.map((stat) => {
+            const isActive = filters.year === String(stat.year);
+            const params = new URLSearchParams({
+              ...(filters.q    ? { q:    filters.q    } : {}),
+              ...(filters.type ? { type: filters.type } : {}),
+              ...(filters.sort ? { sort: filters.sort } : {}),
+              ...(filters.order ? { order: filters.order } : {}),
+              ...(isActive ? {} : { year: String(stat.year) }),
+            });
+            return (
+              <a
+                key={stat.year}
+                href={`/contratos?${params.toString()}`}
+                className={`rounded-xl border px-5 py-3 text-center transition-colors min-w-[110px] ${
+                  isActive
+                    ? "bg-brand-600 border-brand-600 text-white shadow-sm"
+                    : "bg-white border-gray-200 text-gray-800 hover:border-brand-400 hover:bg-brand-50"
+                }`}
+              >
+                <p className="text-xl font-bold">{stat.year}</p>
+                <p className={`text-sm font-medium mt-0.5 ${isActive ? "text-white/80" : "text-brand-600"}`}>
+                  {fmt.format(stat.amount)}
+                </p>
+                <p className={`text-xs mt-0.5 ${isActive ? "text-white/60" : "text-gray-400"}`}>
+                  {stat.total} contrato{stat.total !== 1 ? "s" : ""}
+                </p>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Filtros */}
       <Suspense fallback={null}>
-        <ContractsFilters years={years} types={types} />
+        <ContractsFilters types={types} />
       </Suspense>
 
       {/* Resultados */}
@@ -111,7 +147,8 @@ export default async function ContratosPage({ searchParams }: PageProps) {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-2/5">Título</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-1/3">Título</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Órgano contratante</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Adjudicataria</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Importe</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Tipo</th>
@@ -140,8 +177,13 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                         </a>
                       )}
                     </td>
+                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                      Ayto. de Ubrique
+                    </td>
                     <td className="px-4 py-3 text-gray-700 max-w-40">
-                      <span className="line-clamp-2">{c.awardedTo ?? "—"}</span>
+                      <span className="line-clamp-2">
+                        {c.awardedTo ?? <span className="text-gray-400 italic">Sin adjudicar</span>}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                       {c.amount ? fmt.format(Number(c.amount)) : "—"}

@@ -5,11 +5,10 @@ import { useCallback, useTransition } from "react";
 import type { Route } from "next";
 
 type Props = {
-  years: number[];
   types: Array<{ code: string; label: string }>;
 };
 
-export default function ContractsFilters({ years, types }: Props) {
+export default function ContractsFilters({ types }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -43,20 +42,6 @@ export default function ContractsFilters({ years, types }: Props) {
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
-
-      {/* Año */}
-      <select
-        value={searchParams.get("year") ?? ""}
-        onChange={(e) => updateParam("year", e.target.value)}
-        className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-      >
-        <option value="">Todos los años</option>
-        {years.map((y) => (
-          <option key={y} value={y}>
-            {y}
-          </option>
-        ))}
-      </select>
 
       {/* Tipo */}
       <select
