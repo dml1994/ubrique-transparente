@@ -84,37 +84,55 @@ def _text(el: Optional[ET.Element], *paths: str, ns=NS) -> Optional[str]:
 
 
 def _is_ubrique_entry(entry: ET.Element) -> bool:
-    """True si Ubrique es el órgano de contratación (comprador) de la entry."""
-    cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
-    cac = "urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2"
+    """True si Ubrique es el órgano de contratación (comprador) de la entry.
 
-    for cp in entry.iter(f"{{{cac}}}ContractingParty"):
-        for id_el in cp.iter(f"{{{cbc}}}ID"):
+    Busca por nombre local del elemento (ignorando namespace) para cubrir
+    variaciones entre los feeds de licitaciones y contratos menores.
+    """
+    contracting_parties = [
+        el for el in entry.iter()
+        if el.tag.split("}")[-1] == "ContractingParty"
+    ]
+
+    if contracting_parties:
+        for cp in contracting_parties:
+            for el in cp.iter():
+                local = el.tag.split("}")[-1]
+                if local == "ID" and el.text and UBRIQUE_NIF in el.text:
+                    return True
+                if local == "Name" and el.text and "ubrique" in el.text.lower():
+                    return True
+    else:
+        # Fallback: estructura sin ContractingParty explícito
+        cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
+        for id_el in entry.iter(f"{{{cbc}}}ID"):
             if id_el.text and UBRIQUE_NIF in id_el.text:
                 return True
-        for name_el in cp.iter(f"{{{cbc}}}Name"):
-            if name_el.text and "ubrique" in name_el.text.lower():
-                return True
+
     return False
 
 
 def _parse_awarded_to(entry: ET.Element) -> Optional[str]:
-    """Extrae el nombre de la empresa adjudicataria."""
-    cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
-    cac = "urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2"
+    """Extrae el nombre de la empresa adjudicataria buscando por nombre local."""
 
-    # Licitaciones: TenderResult/WinningParty
-    for tr in entry.iter(f"{{{cac}}}TenderResult"):
-        for wp in tr.iter(f"{{{cac}}}WinningParty"):
-            for name in wp.iter(f"{{{cbc}}}Name"):
-                if name.text:
-                    return name.text.strip()
+    def _local(el: ET.Element) -> str:
+        return el.tag.split("}")[-1]
 
-    # Contratos menores: ContractorParty
-    for cp in entry.iter(f"{{{cac}}}ContractorParty"):
-        for name in cp.iter(f"{{{cbc}}}Name"):
-            if name.text:
-                return name.text.strip()
+    # Licitaciones: TenderResult → WinningParty → Name
+    for el in entry.iter():
+        if _local(el) == "TenderResult":
+            for child in el.iter():
+                if _local(child) == "WinningParty":
+                    for sub in child.iter():
+                        if _local(sub) == "Name" and sub.text:
+                            return sub.text.strip()
+
+    # Contratos menores: ContractorParty → Name
+    for el in entry.iter():
+        if _local(el) == "ContractorParty":
+            for child in el.iter():
+                if _local(child) == "Name" and child.text:
+                    return child.text.strip()
 
     return None
 
