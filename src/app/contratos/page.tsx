@@ -151,7 +151,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                   <th className="text-left px-4 py-3 font-medium text-gray-600 w-2/5">Título</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 w-1/4">Adjudicataria</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Importe</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-24">Tipo</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-16">Tipo</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Fecha</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
                 </tr>
