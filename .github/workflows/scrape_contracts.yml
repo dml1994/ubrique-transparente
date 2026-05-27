@@ -48,3 +48,8 @@ jobs:
           else
             python scripts/scrapers/pcsp_contracts.py
           fi
+
+      - name: Enriquecer adjudicatarios faltantes
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/scrapers/enrich_awarded_to.py
