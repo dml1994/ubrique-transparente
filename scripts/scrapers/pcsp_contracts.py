@@ -1,14 +1,21 @@
 """
 Scraper de contratos del Ayuntamiento de Ubrique desde la PCSP.
 
-Fuente: ZIPs anuales de datos abiertos de la Plataforma de Contratación
-del Sector Público (https://contrataciondelsectorpublico.gob.es).
+Fuente: ZIPs de datos abiertos de la Plataforma de Contratación del Sector
+Público (https://contrataciondelsectorpublico.gob.es).
 
-Estrategia:
-  1. Descarga el ZIP del año actual (licitaciones + contratos menores).
-  2. Itera los ficheros .atom dentro del ZIP sin extraerlos a disco.
-  3. Filtra entradas por NIF del Ayuntamiento de Ubrique (P1103800G).
-  4. Upserta los contratos en Neon PostgreSQL.
+Canales de sindicación:
+  - sindicacion_643:  licitaciones en perfil de contratante
+  - sindicacion_1044: licitaciones por agregación (CCAA)
+  - sindicacion_1143: contratos menores
+
+Estrategia por año:
+  1. Intenta descargar el ZIP anual ({base}_{year}.zip).
+  2. Si no existe (el servidor devuelve HTML en lugar de ZIP), busca ZIPs
+     mensuales ({base}_{year}{mes:02d}.zip) — formato usado en 2025+.
+  3. Itera los ficheros .atom dentro de cada ZIP sin extraerlos a disco.
+  4. Filtra entradas por NIF del Ayuntamiento de Ubrique (P1103800G).
+  5. Upserta los contratos en Neon PostgreSQL.
 """
 
 import io
@@ -38,9 +45,17 @@ UBRIQUE_DIR3 = "L01110380"
 # ZIPs de datos abiertos PCSP (actualizados diariamente)
 BASE_SINDICACION = "https://contrataciondelsectorpublico.gob.es/sindicacion"
 
+# Base de cada feed (sin sufijo _{periodo}.zip)
 FEEDS = {
-    "licitaciones": f"{BASE_SINDICACION}/sindicacion_643/licitacionesPerfilesContratanteCompleto3_{{year}}.zip",
-    "menores":      f"{BASE_SINDICACION}/sindicacion_1143/contratosMenoresPerfilesContratantes_{{year}}.zip",
+    "licitaciones": f"{BASE_SINDICACION}/sindicacion_643/licitacionesPerfilesContratanteCompleto3",
+    "agregacion":   f"{BASE_SINDICACION}/sindicacion_1044/PlataformasAgregadasSinMenores",
+    "menores":      f"{BASE_SINDICACION}/sindicacion_1143/contratosMenoresPerfilesContratantes",
+}
+
+FEED_STATUS = {
+    "licitaciones": "awarded",
+    "agregacion":   "awarded",
+    "menores":      "published",
 }
 
 # Namespaces CODICE 2 usados en los ATOM de la PCSP
@@ -52,6 +67,50 @@ NS = {
 }
 
 # ─── Descarga ─────────────────────────────────────────────────────────────────
+
+def url_is_zip(url: str, timeout: int = 15) -> bool:
+    """True si la URL sirve un ZIP real (Content-Type: application/zip).
+
+    El servidor PCSP devuelve HTTP 200 + HTML para URLs inexistentes,
+    así que no basta con comprobar el código de estado.
+    """
+    try:
+        r = requests.get(url, stream=True, timeout=timeout)
+        is_zip = "zip" in r.headers.get("Content-Type", "").lower()
+        r.close()
+        return is_zip
+    except Exception:
+        return False
+
+
+def get_zip_urls(base_url: str, year: int) -> List[str]:
+    """Devuelve las URLs de ZIPs disponibles para el año dado.
+
+    Prueba primero el ZIP anual; si no existe (formato 2025+), busca
+    los ZIPs mensuales del año.
+    """
+    annual = f"{base_url}_{year}.zip"
+    if url_is_zip(annual):
+        log.info("  ZIP anual encontrado: %s", annual)
+        return [annual]
+
+    log.info("  Sin ZIP anual para %d — buscando ZIPs mensuales...", year)
+    today = datetime.date.today()
+    max_month = today.month if year == today.year else 12
+
+    monthly = []
+    for month in range(1, max_month + 1):
+        url = f"{base_url}_{year}{month:02d}.zip"
+        if url_is_zip(url):
+            monthly.append(url)
+
+    if monthly:
+        log.info("  %d ZIPs mensuales encontrados para %d", len(monthly), year)
+    else:
+        log.warning("  Sin ZIPs disponibles para %d en %s", year, base_url)
+
+    return monthly
+
 
 def download_zip(url: str, retries: int = 3) -> bytes:
     """Descarga un ZIP con reintentos para errores SSL intermitentes en Windows."""
@@ -196,7 +255,7 @@ def parse_entry(entry: ET.Element, feed_type: str) -> Optional[dict]:
         "contract_type":   contract_type,
         "cpv_code":        cpv_code,
         "cpv_description": cpv_desc,
-        "status":          "awarded" if feed_type == "licitaciones" else "published",
+        "status":          FEED_STATUS.get(feed_type, "published"),
         "source_url":      source_url,
         "raw_xml":         ET.tostring(entry, encoding="unicode"),
     }
@@ -277,18 +336,17 @@ def run(years: Optional[List[int]] = None):
 
     total = 0
     for year in years:
-        for feed_type, url_tpl in FEEDS.items():
-            url = url_tpl.format(year=year)
-            try:
-                zip_bytes = download_zip(url)
-                contracts = process_zip(zip_bytes, feed_type)
-                saved = save_contracts(contracts)
-                total += saved
-                log.info("[%s %d] %d contratos guardados en BD", feed_type, year, saved)
-            except requests.HTTPError as e:
-                log.warning("HTTP %s para %s — puede que el año no exista aún", e.response.status_code, url)
-            except Exception as e:
-                log.error("Error procesando %s: %s", url, e, exc_info=True)
+        for feed_type, base_url in FEEDS.items():
+            urls = get_zip_urls(base_url, year)
+            for url in urls:
+                try:
+                    zip_bytes = download_zip(url)
+                    contracts = process_zip(zip_bytes, feed_type)
+                    saved = save_contracts(contracts)
+                    total += saved
+                    log.info("[%s] %s → %d contratos guardados", feed_type, url, saved)
+                except Exception as e:
+                    log.error("Error procesando %s: %s", url, e, exc_info=True)
 
     log.info("=== Total: %d contratos upsertados ===", total)
     return total
