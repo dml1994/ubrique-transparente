@@ -147,6 +147,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-400 text-xs w-8">ID</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 w-2/5">Título</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Adjudicataria</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Importe</th>
@@ -158,6 +159,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
               <tbody className="divide-y divide-gray-100">
                 {rows.map((c) => (
                   <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-xs text-gray-300 font-mono">{c.id}</td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900 line-clamp-2 leading-snug">
                         {c.title}
@@ -176,10 +178,8 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                         </a>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-700 max-w-40">
-                      <span className="line-clamp-2">
-                        {c.awardedTo ?? <span className="text-gray-400 italic">Sin adjudicar</span>}
-                      </span>
+                    <td className="px-4 py-3 text-gray-700">
+                      {c.awardedTo ?? <span className="text-gray-400 italic">Sin adjudicar</span>}
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                       {c.amount ? fmt.format(Number(c.amount)) : "—"}
