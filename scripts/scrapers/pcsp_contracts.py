@@ -68,17 +68,16 @@ NS = {
 
 # ─── Descarga ─────────────────────────────────────────────────────────────────
 
-def url_is_zip(url: str, timeout: int = 15) -> bool:
-    """True si la URL sirve un ZIP real (Content-Type: application/zip).
+def url_is_zip(url: str, timeout: int = 30) -> bool:
+    """True si la URL sirve un ZIP real.
 
-    El servidor PCSP devuelve HTTP 200 + HTML para URLs inexistentes,
-    así que no basta con comprobar el código de estado.
+    Usa Range: bytes=0-3 para obtener solo los primeros 4 bytes y comprobar
+    el magic number del ZIP (PK). El servidor PCSP devuelve HTTP 200 + HTML
+    para URLs inexistentes (HEAD y Content-Type no son fiables en este servidor).
     """
     try:
-        r = requests.get(url, stream=True, timeout=timeout)
-        is_zip = "zip" in r.headers.get("Content-Type", "").lower()
-        r.close()
-        return is_zip
+        r = requests.get(url, headers={"Range": "bytes=0-3"}, timeout=timeout, stream=False)
+        return r.content[:2] == b"PK"
     except Exception:
         return False
 
