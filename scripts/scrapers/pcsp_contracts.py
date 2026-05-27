@@ -198,6 +198,7 @@ def parse_entry(entry: ET.Element, feed_type: str) -> Optional[dict]:
         "cpv_description": cpv_desc,
         "status":          "awarded" if feed_type == "licitaciones" else "published",
         "source_url":      source_url,
+        "raw_xml":         ET.tostring(entry, encoding="unicode"),
     }
 
 # ─── Procesado de ZIP ─────────────────────────────────────────────────────────
@@ -234,11 +235,11 @@ UPSERT_SQL = """
 INSERT INTO contracts (
     external_id, title, amount, awarded_to, awarded_date,
     published_date, contract_type, cpv_code, cpv_description,
-    status, source_url, updated_at
+    status, source_url, raw_xml, updated_at
 ) VALUES (
     %(external_id)s, %(title)s, %(amount)s, %(awarded_to)s, %(awarded_date)s,
     %(published_date)s, %(contract_type)s, %(cpv_code)s, %(cpv_description)s,
-    %(status)s, %(source_url)s, NOW()
+    %(status)s, %(source_url)s, %(raw_xml)s, NOW()
 )
 ON CONFLICT (external_id) DO UPDATE SET
     title           = EXCLUDED.title,
@@ -251,6 +252,7 @@ ON CONFLICT (external_id) DO UPDATE SET
     cpv_description = EXCLUDED.cpv_description,
     status          = EXCLUDED.status,
     source_url      = EXCLUDED.source_url,
+    raw_xml         = EXCLUDED.raw_xml,
     updated_at      = NOW()
 """
 
