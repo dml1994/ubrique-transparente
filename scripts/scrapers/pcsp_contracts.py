@@ -220,21 +220,22 @@ def parse_entry(entry: ET.Element, feed_type: str) -> Optional[dict]:
         contract_title = el.text
         break
 
-    # CPV
-    cpv_code = cpv_desc = None
+    # CPV — la descripción no viene en el XML, sólo el código
+    cpv_code = None
     for el in entry.iter(f"{{{cbc}}}ItemClassificationCode"):
         cpv_code = el.text
-        cpv_desc = el.get("name")
         break
 
     # Empresa adjudicataria
     awarded_to = _parse_awarded_to(entry)
 
-    # Tipo de contrato
+    # Tipo de contrato — el elemento es TypeCode con listURI ContractCode
+    # (hay otros TypeCode en el XML, p.ej. ContractingPartyTypeCode)
     contract_type = None
-    for el in entry.iter(f"{{{cbc}}}ContractTypeCode"):
-        contract_type = el.text
-        break
+    for el in entry.iter(f"{{{cbc}}}TypeCode"):
+        if "ContractCode" in el.get("listURI", ""):
+            contract_type = el.text
+            break
 
     # Fecha adjudicación
     award_date = None
@@ -254,7 +255,7 @@ def parse_entry(entry: ET.Element, feed_type: str) -> Optional[dict]:
         "published_date":  published_date,
         "contract_type":   contract_type,
         "cpv_code":        cpv_code,
-        "cpv_description": cpv_desc,
+        "cpv_description": None,
         "status":          FEED_STATUS.get(feed_type, "published"),
         "source_url":      source_url,
         "raw_xml":         ET.tostring(entry, encoding="unicode"),
