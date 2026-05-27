@@ -16,13 +16,17 @@ export type ContractsFilter = {
 const PAGE_SIZE = 25;
 
 const CONTRACT_TYPE_MAP: Record<string, string> = {
-  "1": "Obras",
-  "2": "Servicios",
-  "3": "Suministros",
-  "4": "Gestión de servicios",
-  "5": "Administrativo especial",
-  "6": "Privado",
-  "7": "Patrimonial",
+  "1":  "Suministros",
+  "2":  "Gestión de servicios públicos",
+  "3":  "Obras",
+  "4":  "Concesión de obras",
+  "5":  "Concesión de servicios",
+  "7":  "Servicios especiales",
+  "8":  "Servicios",
+  "21": "Administrativo especial",
+  "31": "Privado",
+  "50": "Patrimonial",
+  "51": "Otro",
 };
 
 export function labelContractType(code: string | null): string {
