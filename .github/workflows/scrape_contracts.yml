@@ -10,12 +10,18 @@ on:
         description: "Año a procesar (vacío = año actual)"
         type: string
         default: ""
+      backfill:
+        description: "Carga histórica 2018–actual (ignora 'year')"
+        type: boolean
+        default: false
 
 jobs:
   scrape:
     name: Descargar y procesar contratos PCSP
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # El ZIP de licitaciones del año actual supera 2 GB; con backfill son ~18 GB.
+    # Se usa el máximo de GitHub Actions para cubrir ambos casos.
+    timeout-minutes: 360
 
     steps:
       - name: Checkout
@@ -35,7 +41,9 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ -n "${{ github.event.inputs.year }}" ]; then
+          if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
+            python scripts/scrapers/pcsp_contracts.py --backfill
+          elif [ -n "${{ github.event.inputs.year }}" ]; then
             python scripts/scrapers/pcsp_contracts.py --years ${{ github.event.inputs.year }}
           else
             python scripts/scrapers/pcsp_contracts.py
