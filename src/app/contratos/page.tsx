@@ -144,16 +144,16 @@ export default async function ContratosPage({ searchParams }: PageProps) {
       {rows.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-400 text-xs w-8">ID</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 w-2/5">Título</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 w-1/3">Adjudicataria</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Importe</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap w-px">Tipo</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Fecha</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-24">Tipo</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-28">Fecha</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-28">Estado</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -184,7 +184,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                     <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                       {c.amount ? fmt.format(Number(c.amount)) : "—"}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    <td className="px-4 py-3 text-gray-600">
                       {labelContractType(c.contractType)}
                     </td>
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
