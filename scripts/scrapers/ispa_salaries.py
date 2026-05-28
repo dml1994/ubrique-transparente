@@ -64,11 +64,10 @@ COUNCIL_2023 = {
     ],
 }
 
-UPSERT_SQL = """
+INSERT_SQL = """
 INSERT INTO salaries (position, person_name, year, gross_annual, total, source_url, source_doc)
 VALUES (%(position)s, %(person_name)s, %(year)s, %(gross_annual)s, %(gross_annual)s,
         %(source_url)s, %(source_doc)s)
-ON CONFLICT DO NOTHING
 """
 
 
@@ -147,9 +146,12 @@ def build_records_2023(alcalde_rows: list, concejal_rows: list, edition: dict) -
     for i, row_p2 in enumerate(excl[:4]):
         pos, name = teniente_names[i]
         amount_p2 = row_p2[6]
-        # Buscar período 1 equivalente (puede que no exista si era oposición)
-        amount_p1 = p1_excl[i][6] if i < len(p1_excl) else 0
-        total_2023 = round(amount_p1 + amount_p2, 2)
+        if i < len(p1_excl):
+            # Mismo cargo en mandato anterior: sumar ambos períodos
+            total_2023 = round(p1_excl[i][6] + amount_p2, 2)
+        else:
+            # Solo aparece en el nuevo mandato: anualizar P2
+            total_2023 = round(amount_p2 / days_p2 * days_total, 2)
         records.append({
             "position": pos,
             "person_name": name,
@@ -266,14 +268,18 @@ def build_records_simple(alcalde_rows: list, concejal_rows: list,
     return records
 
 
-def save_records(records: List[dict]) -> int:
+def save_records(records: List[dict], year: int) -> int:
     if not records:
         return 0
     conn = get_conn()
     try:
         with conn.cursor() as cur:
-            psycopg2.extras.execute_batch(cur, UPSERT_SQL, records, page_size=100)
+            cur.execute("DELETE FROM salaries WHERE year = %s", (year,))
+            deleted = cur.rowcount
+            psycopg2.extras.execute_batch(cur, INSERT_SQL, records, page_size=100)
         conn.commit()
+        if deleted:
+            log.info("  Eliminados %d registros previos para %d", deleted, year)
         return len(records)
     finally:
         conn.close()
@@ -308,8 +314,8 @@ def run(years: Optional[List[int]] = None):
         else:
             records = build_records_simple(alcalde_rows, concejal_rows, year, edition)
 
-        saved = save_records(records)
-        log.info("=== %d retribuciones upsertadas para %d ===", saved, year)
+        saved = save_records(records, year)
+        log.info("=== %d retribuciones cargadas para %d ===", saved, year)
         total += saved
 
     return total
