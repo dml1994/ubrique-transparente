@@ -152,12 +152,17 @@ def _is_ubrique_entry(entry: ET.Element) -> bool:
     cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
     IDENTIFIERS = (UBRIQUE_NIF, UBRIQUE_DIR3)
 
+    NAME_TAGS = {"Name", "CityName", "RegistrationName"}
+
     for el in entry.iter():
         if el.tag.split("}")[-1] == "LocatedContractingParty":
             for child in el.iter():
-                if child.tag.split("}")[-1] == "ID":
-                    if child.text and any(ident in child.text for ident in IDENTIFIERS):
-                        return True
+                local = child.tag.split("}")[-1]
+                text = child.text or ""
+                if local == "ID" and any(ident in text for ident in IDENTIFIERS):
+                    return True
+                if local in NAME_TAGS and "Ubrique" in text:
+                    return True
     return False
 
 
