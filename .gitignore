@@ -8,10 +8,14 @@ node_modules/
 out/
 build/
 
-# Environment
+# Environment — NUNCA subas ficheros con credenciales reales
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+scripts/.env
+scripts/.env.local
 
 # Misc
 .DS_Store
