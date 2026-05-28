@@ -1,3 +1,5 @@
+export const revalidate = 86400;
+
 import { getBudgetLines, getBudgetYears, getBudgetStats } from "@/lib/budget";
 
 const fmt = new Intl.NumberFormat("es-ES", {

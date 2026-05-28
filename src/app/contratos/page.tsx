@@ -1,3 +1,5 @@
+export const revalidate = 3600; // 1 hora en CDN
+
 import { Suspense } from "react";
 import {
   getContracts,

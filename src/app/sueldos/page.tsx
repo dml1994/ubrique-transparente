@@ -1,3 +1,5 @@
+export const revalidate = 86400; // 24 horas (datos cambian raramente)
+
 import { getSalaries, getSalaryYears, getSalaryStats } from "@/lib/salaries";
 
 const fmt = new Intl.NumberFormat("es-ES", {

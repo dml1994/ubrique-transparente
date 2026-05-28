@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import { getCompanies, getCompanyYears, getCompanyStats } from "@/lib/companies";
 
 const fmt = new Intl.NumberFormat("es-ES", {

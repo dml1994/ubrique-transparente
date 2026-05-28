@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import { notFound } from "next/navigation";
 import { getCompanyDetail } from "@/lib/companies";
 import { labelContractType } from "@/lib/contracts";
@@ -30,8 +32,9 @@ const STATUS_LABEL: Record<string, string> = {
 type PageProps = { params: Promise<{ nif: string }> };
 
 export default async function EmpresaDetailPage({ params }: PageProps) {
-  const { nif } = await params;
-  const company = await getCompanyDetail(decodeURIComponent(nif));
+  const { nif: rawNif } = await params;
+  const nif = decodeURIComponent(rawNif).slice(0, 200);
+  const company = await getCompanyDetail(nif);
 
   if (!company) notFound();
 

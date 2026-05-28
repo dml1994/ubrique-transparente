@@ -36,18 +36,19 @@ export function labelContractType(code: string | null): string {
 }
 
 export async function getContracts(filters: ContractsFilter) {
-  const page = Math.max(1, parseInt(filters.page ?? "1", 10));
+  const page = Math.min(500, Math.max(1, parseInt(filters.page ?? "1", 10)));
   const offset = (page - 1) * PAGE_SIZE;
 
   const conditions = [];
 
   if (filters.q) {
-    const term = `%${filters.q}%`;
+    const q = filters.q.slice(0, 120);
+    const term = `%${q}%`;
     conditions.push(
       or(
         ilike(contracts.title, term),
         ilike(contracts.awardedTo, term),
-        ilike(contracts.cpvDescription, term)
+        ilike(contracts.cpvDescription, term),
       )
     );
   }
