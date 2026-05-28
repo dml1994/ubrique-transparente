@@ -1,0 +1,42 @@
+name: Scraper — Sueldos ISPA
+
+on:
+  schedule:
+    # Cada 1 de febrero (el ISPA del año anterior suele publicarse en enero)
+    - cron: "0 6 1 2 *"
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Año a cargar (vacío = todos disponibles)"
+        type: string
+        default: ""
+
+jobs:
+  scrape:
+    name: Cargar retribuciones desde ISPA
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run scraper
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -n "${{ github.event.inputs.year }}" ]; then
+            python scripts/scrapers/ispa_salaries.py --year ${{ github.event.inputs.year }}
+          else
+            python scripts/scrapers/ispa_salaries.py
+          fi
