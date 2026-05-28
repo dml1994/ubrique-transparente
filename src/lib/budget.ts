@@ -20,13 +20,21 @@ export async function getBudgetYears(): Promise<number[]> {
 }
 
 export async function getBudgetStats(year?: number) {
-  const [stats] = await db
-    .select({
-      planned:  sql<number>`COALESCE(SUM(planned_amount), 0)`,
-      executed: sql<number>`COALESCE(SUM(executed_amount), 0)`,
-      lines:    sql<number>`COUNT(*)`,
-    })
-    .from(budgetLines)
-    .where(year ? eq(budgetLines.year, year) : undefined);
-  return stats;
+  const result = await db.execute(
+    sql`SELECT
+          section,
+          COALESCE(SUM(planned_amount), 0) AS planned,
+          COUNT(*) AS lines
+        FROM budget_lines
+        ${year ? sql`WHERE year = ${year}` : sql``}
+        GROUP BY section`
+  );
+  const rows = result.rows as Array<{ section: string; planned: string; lines: string }>;
+  const gastos   = rows.find((r) => r.section === "Gastos");
+  const ingresos = rows.find((r) => r.section === "Ingresos");
+  return {
+    gastos:   Number(gastos?.planned   ?? 0),
+    ingresos: Number(ingresos?.planned ?? 0),
+    lines:    rows.reduce((s, r) => s + Number(r.lines), 0),
+  };
 }
