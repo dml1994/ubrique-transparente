@@ -54,6 +54,7 @@ export const contracts = pgTable("contracts", {
   cpvDescription: text("cpv_description"),
   status:         contractStatusEnum("status").default("published"),
   sourceUrl:      text("source_url"),
+  rawXml:         text("raw_xml"),
   eventId:        integer("event_id").references(() => events.id),
   createdAt:      timestamp("created_at").defaultNow(),
   updatedAt:      timestamp("updated_at").defaultNow(),

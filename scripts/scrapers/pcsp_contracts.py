@@ -55,7 +55,7 @@ FEEDS = {
 FEED_STATUS = {
     "licitaciones": "awarded",
     "agregacion":   "awarded",
-    "menores":      "published",
+    "menores":      "awarded",
 }
 
 # Namespaces CODICE 2 usados en los ATOM de la PCSP
@@ -330,13 +330,15 @@ def save_contracts(contracts: List[Dict]) -> int:
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
-def run(years: Optional[List[int]] = None):
+def run(years: Optional[List[int]] = None, feeds: Optional[List[str]] = None):
     if years is None:
         years = [datetime.date.today().year]
 
+    active_feeds = {k: v for k, v in FEEDS.items() if feeds is None or k in feeds}
+
     total = 0
     for year in years:
-        for feed_type, base_url in FEEDS.items():
+        for feed_type, base_url in active_feeds.items():
             urls = get_zip_urls(base_url, year)
             for url in urls:
                 try:
@@ -357,6 +359,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scraper contratos PCSP — Ubrique")
     parser.add_argument("--years", nargs="+", type=int, default=None,
                         help="Años a procesar (por defecto: año actual)")
+    parser.add_argument("--feeds", nargs="+", choices=list(FEEDS.keys()), default=None,
+                        help="Feeds a procesar (por defecto: todos)")
     parser.add_argument("--backfill", action="store_true",
                         help="Carga histórica: procesa 2018 hasta el año actual")
     args = parser.parse_args()
@@ -367,4 +371,4 @@ if __name__ == "__main__":
     else:
         years = args.years
 
-    run(years)
+    run(years, feeds=args.feeds)

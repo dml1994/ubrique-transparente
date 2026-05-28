@@ -144,16 +144,16 @@ export default async function ContratosPage({ searchParams }: PageProps) {
       {rows.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm table-fixed">
+            <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-400 text-xs w-8">ID</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-2/5">Título</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-1/3">Adjudicataria</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Importe</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-24">Tipo</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-28">Fecha</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-28">Estado</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-[35%]">Título</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-[28%]">Adjudicataria</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600 w-[10%]">Importe</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-[9%]">Tipo</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-[9%]">Fecha</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 w-[9%]">Estado</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
