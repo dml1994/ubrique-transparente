@@ -8,6 +8,7 @@ import {
   boolean,
   real,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -89,7 +90,9 @@ export const budgetLines = pgTable("budget_lines", {
   executedAmount:  numeric("executed_amount",  { precision: 14, scale: 2 }),
   sourceUrl:       text("source_url"),
   createdAt:       timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  unique("budget_lines_unique").on(t.year, t.section, t.program, t.category),
+]);
 
 // ─── Propuestas de clasificación por IA (eventos) ────────────────────────────
 
