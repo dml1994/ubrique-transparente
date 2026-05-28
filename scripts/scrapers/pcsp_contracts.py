@@ -154,9 +154,10 @@ def _is_ubrique_entry(entry: ET.Element) -> bool:
 
     for el in entry.iter():
         if el.tag.split("}")[-1] == "LocatedContractingParty":
-            for child in el.iter(f"{{{cbc}}}ID"):
-                if child.text and any(ident in child.text for ident in IDENTIFIERS):
-                    return True
+            for child in el.iter():
+                if child.tag.split("}")[-1] == "ID":
+                    if child.text and any(ident in child.text for ident in IDENTIFIERS):
+                        return True
     return False
 
 

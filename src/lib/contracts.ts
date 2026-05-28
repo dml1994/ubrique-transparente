@@ -53,7 +53,7 @@ export async function getContracts(filters: ContractsFilter) {
 
   if (filters.year) {
     conditions.push(
-      sql`EXTRACT(YEAR FROM ${contracts.publishedDate}) = ${parseInt(filters.year, 10)}`
+      sql`EXTRACT(YEAR FROM COALESCE(${contracts.awardedDate}, ${contracts.publishedDate})) = ${parseInt(filters.year, 10)}`
     );
   }
 
@@ -109,11 +109,11 @@ export async function getContractStats() {
 export async function getYearStats(): Promise<Array<{ year: number; total: number; amount: number }>> {
   const result = await db.execute(
     sql`SELECT
-          EXTRACT(YEAR FROM published_date)::int AS year,
-          COUNT(*)::int                          AS total,
-          COALESCE(SUM(amount), 0)::float        AS amount
+          EXTRACT(YEAR FROM COALESCE(awarded_date, published_date))::int AS year,
+          COUNT(*)::int                                                   AS total,
+          COALESCE(SUM(amount), 0)::float                                AS amount
         FROM contracts
-        WHERE published_date IS NOT NULL
+        WHERE COALESCE(awarded_date, published_date) IS NOT NULL
         GROUP BY year
         ORDER BY year DESC`
   );
