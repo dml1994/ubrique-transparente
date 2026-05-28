@@ -100,7 +100,7 @@ export default async function EmpresasPage({ searchParams }: PageProps) {
                     <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
                     <td className="px-4 py-3">
                       <a
-                        href={`/contratos?adjudicataria=${encodeURIComponent(c.name)}`}
+                        href={`/empresas/${encodeURIComponent(c.nif)}`}
                         className="font-medium text-gray-900 hover:text-brand-600 transition-colors"
                       >
                         {c.name}

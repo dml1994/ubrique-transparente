@@ -178,6 +178,20 @@ def _parse_awarded_to(entry: ET.Element) -> Optional[str]:
     return None
 
 
+def _parse_awarded_to_nif(entry: ET.Element) -> Optional[str]:
+    """Extrae el NIF/CIF de la empresa adjudicataria desde TenderResult/WinningParty."""
+    cbc = "urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"
+    AYTO_NIFS = {UBRIQUE_NIF, UBRIQUE_DIR3}
+
+    for el in entry.iter():
+        if el.tag.split("}")[-1] == "WinningParty":
+            for child in el.iter(f"{{{cbc}}}ID"):
+                scheme = child.get("schemeName", "")
+                if scheme == "NIF" and child.text and child.text.strip() not in AYTO_NIFS:
+                    return child.text.strip()
+    return None
+
+
 def _parse_amount(entry: ET.Element) -> Optional[float]:
     """Extrae el importe del contrato."""
     tags = [
@@ -256,6 +270,7 @@ def parse_entry(entry: ET.Element, feed_type: str) -> Optional[dict]:
         "title":           contract_title or title or "(Sin título)",
         "amount":          amount,
         "awarded_to":      awarded_to,
+        "awarded_to_nif":  _parse_awarded_to_nif(entry),
         "awarded_date":    award_date,
         "published_date":  published_date,
         "contract_type":   contract_type,
@@ -298,11 +313,11 @@ def process_zip(zip_bytes: bytes, feed_type: str) -> List[Dict]:
 
 UPSERT_SQL = """
 INSERT INTO contracts (
-    external_id, title, amount, awarded_to, awarded_date,
+    external_id, title, amount, awarded_to, awarded_to_nif, awarded_date,
     published_date, contract_type, cpv_code, cpv_description,
     status, source_url, raw_xml, updated_at
 ) VALUES (
-    %(external_id)s, %(title)s, %(amount)s, %(awarded_to)s, %(awarded_date)s,
+    %(external_id)s, %(title)s, %(amount)s, %(awarded_to)s, %(awarded_to_nif)s, %(awarded_date)s,
     %(published_date)s, %(contract_type)s, %(cpv_code)s, %(cpv_description)s,
     %(status)s, %(source_url)s, %(raw_xml)s, NOW()
 )
@@ -310,6 +325,7 @@ ON CONFLICT (external_id) DO UPDATE SET
     title           = EXCLUDED.title,
     amount          = EXCLUDED.amount,
     awarded_to      = EXCLUDED.awarded_to,
+    awarded_to_nif  = EXCLUDED.awarded_to_nif,
     awarded_date    = EXCLUDED.awarded_date,
     published_date  = EXCLUDED.published_date,
     contract_type   = EXCLUDED.contract_type,

@@ -16,6 +16,12 @@ const fmt = new Intl.NumberFormat("es-ES", {
   maximumFractionDigits: 0,
 });
 
+function companyUrl(awardedTo: string | null, awardedToNif: string | null): string | null {
+  if (!awardedTo) return null;
+  const key = awardedToNif ?? awardedTo.trim().toUpperCase().replace(/[^A-Z0-9 ]/g, "");
+  return `/empresas/${encodeURIComponent(key)}`;
+}
+
 const fmtDate = (d: Date | null) =>
   d ? new Date(d).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
@@ -194,7 +200,16 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                       )}
                     </td>
                     <td className="px-4 py-3 text-gray-700">
-                      {c.awardedTo ?? <span className="text-gray-400 italic">Sin adjudicar</span>}
+                      {c.awardedTo ? (
+                        <a
+                          href={companyUrl(c.awardedTo, c.awardedToNif) ?? "#"}
+                          className="hover:text-brand-600 transition-colors"
+                        >
+                          {c.awardedTo}
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 italic">Sin adjudicar</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                       {c.amount ? fmt.format(Number(c.amount)) : "—"}
