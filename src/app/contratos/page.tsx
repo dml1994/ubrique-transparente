@@ -123,6 +123,21 @@ export default async function ContratosPage({ searchParams }: PageProps) {
         </div>
       </div>
 
+      {/* Banner filtro por empresa */}
+      {filters.adjudicataria && (
+        <div className="flex items-center gap-3 bg-brand-50 border border-brand-200 rounded-xl px-4 py-3">
+          <span className="text-sm text-brand-800">
+            Mostrando contratos de <strong>{filters.adjudicataria}</strong>
+          </span>
+          <a
+            href="/contratos"
+            className="ml-auto text-xs text-brand-600 hover:underline whitespace-nowrap"
+          >
+            Quitar filtro ✕
+          </a>
+        </div>
+      )}
+
       {/* Filtros */}
       <Suspense fallback={null}>
         <ContractsFilters types={types} />

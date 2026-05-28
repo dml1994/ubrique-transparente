@@ -8,6 +8,7 @@ export type ContractsFilter = {
   q?: string;
   year?: string;
   type?: string;
+  adjudicataria?: string;
   sort?: string;
   order?: "asc" | "desc";
   page?: string;
@@ -59,6 +60,10 @@ export async function getContracts(filters: ContractsFilter) {
 
   if (filters.type) {
     conditions.push(eq(contracts.contractType, filters.type));
+  }
+
+  if (filters.adjudicataria) {
+    conditions.push(eq(contracts.awardedTo, filters.adjudicataria));
   }
 
   const where = conditions.length ? and(...conditions) : undefined;

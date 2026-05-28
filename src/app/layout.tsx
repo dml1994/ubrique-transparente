@@ -27,7 +27,7 @@ export default function RootLayout({
               <a href="/contratos"   className="hover:text-brand-600 transition-colors">Contratos</a>
               <a href="/sueldos"     className="hover:text-brand-600 transition-colors">Sueldos</a>
               <a href="/presupuesto" className="hover:text-brand-600 transition-colors">Presupuesto</a>
-              <a href="/eventos"     className="hover:text-brand-600 transition-colors">Eventos</a>
+              <a href="/empresas"    className="hover:text-brand-600 transition-colors">Empresas</a>
             </nav>
           </div>
         </header>

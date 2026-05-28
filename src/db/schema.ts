@@ -48,6 +48,7 @@ export const contracts = pgTable("contracts", {
   description:    text("description"),
   amount:         numeric("amount", { precision: 14, scale: 2 }),
   awardedTo:      text("awarded_to"),
+  awardedToNif:   text("awarded_to_nif"),
   awardedDate:    timestamp("awarded_date"),
   publishedDate:  timestamp("published_date"),
   contractType:   text("contract_type"),
