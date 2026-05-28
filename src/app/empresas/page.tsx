@@ -19,17 +19,16 @@ export default async function EmpresasPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Empresas adjudicatarias</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Empresas y autónomos que han recibido contratos del Ayuntamiento de Ubrique,
-          ordenados por importe total adjudicado.
+          Ordenadas por importe total recibido del Ayuntamiento de Ubrique.
         </p>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Empresas distintas</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">
@@ -46,44 +45,63 @@ export default async function EmpresasPage({ searchParams }: PageProps) {
 
       {/* Selector de año */}
       {years.length > 0 && (
-        <div>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Filtrar por año</p>
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="/empresas"
+            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+              !filters.year
+                ? "bg-brand-600 border-brand-600 text-white"
+                : "bg-white border-gray-200 text-gray-700 hover:border-brand-400"
+            }`}
+          >
+            Todos
+          </a>
+          {years.map((y) => (
             <a
-              href="/empresas"
-              className={`rounded-xl border px-4 py-1.5 text-sm font-medium transition-colors ${
-                !filters.year
+              key={y}
+              href={`/empresas?year=${y}`}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                filters.year === String(y)
                   ? "bg-brand-600 border-brand-600 text-white"
                   : "bg-white border-gray-200 text-gray-700 hover:border-brand-400"
               }`}
             >
-              Todos
+              {y}
             </a>
-            {years.map((y) => (
-              <a
-                key={y}
-                href={`/empresas?year=${y}`}
-                className={`rounded-xl border px-4 py-1.5 text-sm font-medium transition-colors ${
-                  filters.year === String(y)
-                    ? "bg-brand-600 border-brand-600 text-white"
-                    : "bg-white border-gray-200 text-gray-700 hover:border-brand-400"
-                }`}
-              >
-                {y}
-              </a>
-            ))}
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Tabla */}
       {companies.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">
           <p className="text-lg font-semibold text-gray-700">Sin datos para este filtro</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
+        <>
+          {/* Móvil: tarjetas */}
+          <div className="md:hidden space-y-2">
+            {companies.map((c, i) => (
+              <a
+                key={c.nif}
+                href={`/empresas/${encodeURIComponent(c.nif)}`}
+                className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3 hover:border-brand-300 transition-colors"
+              >
+                <span className="text-xs text-gray-300 font-mono w-5 shrink-0 text-right">{i + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm truncate">{c.name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {c.contracts} contratos · {fmt.format(c.totalAmount)}
+                  </p>
+                </div>
+                <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            ))}
+          </div>
+
+          {/* Desktop: tabla */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -96,7 +114,7 @@ export default async function EmpresasPage({ searchParams }: PageProps) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {companies.map((c, i) => (
-                  <tr key={c.name} className="hover:bg-gray-50 transition-colors">
+                  <tr key={c.nif} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
                     <td className="px-4 py-3">
                       <a
@@ -111,16 +129,14 @@ export default async function EmpresasPage({ searchParams }: PageProps) {
                       {fmt.format(c.totalAmount)}
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                      {c.firstYear === c.lastYear
-                        ? c.firstYear
-                        : `${c.firstYear} – ${c.lastYear}`}
+                      {c.firstYear === c.lastYear ? c.firstYear : `${c.firstYear} – ${c.lastYear}`}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

@@ -16,12 +16,12 @@ export default function RootLayout({
     <html lang="es">
       <body className="flex flex-col min-h-screen">
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <a href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">UT</span>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+            <a href="/" className="flex items-center gap-2.5">
+              <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-xs">UT</span>
               </div>
-              <span className="font-semibold text-gray-900">Ubrique Transparente</span>
+              <span className="font-semibold text-gray-900 text-sm">Ubrique Transparente</span>
             </a>
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
               <a href="/contratos"   className="hover:text-brand-600 transition-colors">Contratos</a>
@@ -30,6 +30,23 @@ export default function RootLayout({
               <a href="/empresas"    className="hover:text-brand-600 transition-colors">Empresas</a>
             </nav>
           </div>
+          {/* Nav móvil: barra inferior con las 4 secciones */}
+          <nav className="md:hidden flex border-t border-gray-100">
+            {[
+              { href: "/contratos",   label: "Contratos"   },
+              { href: "/empresas",    label: "Empresas"    },
+              { href: "/sueldos",     label: "Sueldos"     },
+              { href: "/presupuesto", label: "Presupuesto" },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="flex-1 py-2.5 text-center text-xs font-medium text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
         </header>
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
           {children}
