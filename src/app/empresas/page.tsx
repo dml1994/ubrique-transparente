@@ -31,13 +31,13 @@ export default async function EmpresasPage({ searchParams }: PageProps) {
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Empresas distintas</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">
+          <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1">
             {stats.total.toLocaleString("es-ES")}
           </p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Total adjudicado</p>
-          <p className="text-2xl font-bold text-brand-600 mt-1">
+          <p className="text-xl md:text-2xl font-bold text-brand-600 mt-1">
             {fmt.format(stats.totalAmount)}
           </p>
         </div>

@@ -67,11 +67,11 @@ export default async function PresupuestoPage({ searchParams }: PageProps) {
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <p className="text-xs text-gray-400 uppercase tracking-wide">Gastos planificados</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{fmt.format(stats.gastos)}</p>
+          <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1">{fmt.format(stats.gastos)}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <p className="text-xs text-gray-400 uppercase tracking-wide">Ingresos planificados</p>
-          <p className="text-2xl font-bold text-brand-600 mt-1">{fmt.format(stats.ingresos)}</p>
+          <p className="text-xl md:text-2xl font-bold text-brand-600 mt-1">{fmt.format(stats.ingresos)}</p>
         </div>
       </div>
 

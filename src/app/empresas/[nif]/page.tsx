@@ -61,11 +61,11 @@ export default async function EmpresaDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Total adjudicado</p>
-          <p className="text-2xl font-bold text-brand-600 mt-1">{fmt.format(company.totalAmount)}</p>
+          <p className="text-xl md:text-2xl font-bold text-brand-600 mt-1">{fmt.format(company.totalAmount)}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Contratos</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{company.contracts}</p>
+          <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1">{company.contracts}</p>
         </div>
       </div>
 
