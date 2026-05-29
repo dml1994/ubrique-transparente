@@ -1,5 +1,18 @@
 export const revalidate = 86400; // 24 horas (datos cambian raramente)
 
+
+export const metadata = {
+  title: "Sueldos de cargos públicos",
+  description:
+    "Retribuciones anuales del alcalde y concejales del Ayuntamiento de Ubrique. Datos oficiales del Ministerio de Hacienda (ISPA).",
+  alternates: { canonical: "https://ubrique-transparente.vercel.app/sueldos" },
+  openGraph: {
+    title: "Sueldos de cargos públicos — Ubrique Transparente",
+    description: "Retribuciones del alcalde y concejales de Ubrique. Fuente: ISPA (Ministerio de Hacienda).",
+    url: "https://ubrique-transparente.vercel.app/sueldos",
+  },
+};
+
 import { getSalaries, getSalaryYears, getSalaryStats } from "@/lib/salaries";
 
 const fmt = new Intl.NumberFormat("es-ES", {

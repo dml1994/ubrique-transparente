@@ -3,6 +3,27 @@ import { getCompanyStats } from "@/lib/companies";
 import { getBudgetYears, getBudgetStats } from "@/lib/budget";
 import { getSalaryYears, getSalaryStats } from "@/lib/salaries";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Ubrique Transparente",
+  url: "https://ubrique-transparente.vercel.app",
+  description:
+    "Portal de transparencia del Ayuntamiento de Ubrique con datos de contratos, sueldos y presupuesto.",
+  about: {
+    "@type": "GovernmentOrganization",
+    name: "Ayuntamiento de Ubrique",
+    url: "https://www.ubrique.es",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Ubrique",
+      addressRegion: "Cádiz",
+      addressCountry: "ES",
+      postalCode: "11600",
+    },
+  },
+};
+
 const eur = (n: number) =>
   new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -80,6 +101,10 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-5">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-brand-600 to-brand-900 rounded-2xl px-8 py-10 text-white overflow-hidden">
         <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-white/5" />

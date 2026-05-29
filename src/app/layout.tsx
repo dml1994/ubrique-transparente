@@ -2,9 +2,43 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ubrique Transparente",
-  description: "Portal de transparencia del Ayuntamiento de Ubrique",
-  keywords: ["transparencia", "ubrique", "contratos", "presupuesto", "sueldos"],
+  metadataBase: new URL("https://ubrique-transparente.vercel.app"),
+  title: {
+    default: "Ubrique Transparente",
+    template: "%s | Ubrique Transparente",
+  },
+  description:
+    "Portal de transparencia del Ayuntamiento de Ubrique (Cádiz). Consulta contratos públicos, retribuciones de cargos electos y presupuestos municipales con datos oficiales actualizados.",
+  keywords: [
+    "transparencia", "ubrique", "ayuntamiento", "contratos públicos",
+    "presupuesto municipal", "sueldos concejales", "cádiz", "andalucía",
+    "plataforma contratación", "datos abiertos",
+  ],
+  authors: [{ name: "Ubrique Transparente" }],
+  creator: "Ubrique Transparente",
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "https://ubrique-transparente.vercel.app",
+    siteName: "Ubrique Transparente",
+    title: "Ubrique Transparente — Transparencia municipal",
+    description:
+      "Contratos públicos, sueldos de cargos y presupuestos del Ayuntamiento de Ubrique. Datos oficiales actualizados diariamente.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ubrique Transparente",
+    description:
+      "Contratos públicos, sueldos y presupuestos del Ayuntamiento de Ubrique.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  alternates: {
+    canonical: "https://ubrique-transparente.vercel.app",
+  },
 };
 
 export default function RootLayout({

@@ -1,5 +1,18 @@
 export const revalidate = 86400;
 
+
+export const metadata = {
+  title: "Presupuesto municipal",
+  description:
+    "Partidas de ingresos y gastos del presupuesto municipal de Ubrique. Datos oficiales del Ministerio de Hacienda.",
+  alternates: { canonical: "https://ubrique-transparente.vercel.app/presupuesto" },
+  openGraph: {
+    title: "Presupuesto municipal — Ubrique Transparente",
+    description: "Presupuesto del Ayuntamiento de Ubrique con desglose de ingresos y gastos por partida.",
+    url: "https://ubrique-transparente.vercel.app/presupuesto",
+  },
+};
+
 import { getBudgetLines, getBudgetYears, getBudgetStats } from "@/lib/budget";
 
 const fmt = new Intl.NumberFormat("es-ES", {

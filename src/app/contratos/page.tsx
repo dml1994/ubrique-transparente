@@ -1,5 +1,18 @@
 export const revalidate = 3600; // 1 hora en CDN
 
+
+export const metadata = {
+  title: "Contratos públicos",
+  description:
+    "Consulta todos los contratos públicos del Ayuntamiento de Ubrique. Datos de la Plataforma de Contratación del Sector Público, actualizados diariamente.",
+  alternates: { canonical: "https://ubrique-transparente.vercel.app/contratos" },
+  openGraph: {
+    title: "Contratos públicos — Ubrique Transparente",
+    description: "Contratos del Ayuntamiento de Ubrique con importes, adjudicatarias y fechas. Fuente oficial PCSP.",
+    url: "https://ubrique-transparente.vercel.app/contratos",
+  },
+};
+
 import { Suspense } from "react";
 import {
   getContracts,

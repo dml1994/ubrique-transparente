@@ -6,9 +6,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        // Evita indexación de combinaciones de filtros (millones de URLs posibles)
         disallow: ["/contratos?*", "/empresas?*", "/sueldos?*", "/presupuesto?*"],
       },
     ],
+    sitemap: "https://ubrique-transparente.vercel.app/sitemap.xml",
   };
 }
