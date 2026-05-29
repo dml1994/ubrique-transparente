@@ -65,9 +65,8 @@ COUNCIL_2023 = {
 }
 
 INSERT_SQL = """
-INSERT INTO salaries (position, person_name, year, gross_annual, total, source_url, source_doc)
-VALUES (%(position)s, %(person_name)s, %(year)s, %(gross_annual)s, %(gross_annual)s,
-        %(source_url)s, %(source_doc)s)
+INSERT INTO salaries (position, person_name, year, total)
+VALUES (%(position)s, %(person_name)s, %(year)s, %(gross_annual)s)
 """
 
 

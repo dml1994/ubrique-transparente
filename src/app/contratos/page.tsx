@@ -241,7 +241,6 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                       <td className="px-4 py-3 text-xs text-gray-300 font-mono">{c.id}</td>
                       <td className="px-4 py-3">
                         <p className="font-medium text-gray-900 line-clamp-2 leading-snug">{c.title}</p>
-                        {c.cpvDescription && <p className="text-xs text-gray-400 mt-0.5">{c.cpvDescription}</p>}
                         {c.sourceUrl && (
                           <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-600 hover:underline mt-0.5 inline-block">
                             Ver en PCSP ↗

@@ -43,12 +43,11 @@ PROGRAM_LABELS = {
 }
 
 UPSERT_SQL = """
-INSERT INTO budget_lines (year, section, program, category, description, planned_amount, source_url)
-VALUES (%(year)s, %(section)s, %(program)s, %(category)s, %(description)s, %(planned_amount)s, %(source_url)s)
+INSERT INTO budget_lines (year, section, program, category, description, planned_amount)
+VALUES (%(year)s, %(section)s, %(program)s, %(category)s, %(description)s, %(planned_amount)s)
 ON CONFLICT (year, section, program, category) DO UPDATE SET
     description    = EXCLUDED.description,
-    planned_amount = EXCLUDED.planned_amount,
-    source_url     = EXCLUDED.source_url
+    planned_amount = EXCLUDED.planned_amount
 """
 
 

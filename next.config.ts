@@ -16,7 +16,8 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",   // Next.js necesita inline scripts
+      // Next.js necesita inline scripts; en dev también necesita eval() para debugging
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",    // Tailwind genera estilos inline
       "img-src 'self' data:",
       "font-src 'self'",

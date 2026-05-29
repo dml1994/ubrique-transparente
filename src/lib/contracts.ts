@@ -48,7 +48,6 @@ export async function getContracts(filters: ContractsFilter) {
       or(
         ilike(contracts.title, term),
         ilike(contracts.awardedTo, term),
-        ilike(contracts.cpvDescription, term),
       )
     );
   }
