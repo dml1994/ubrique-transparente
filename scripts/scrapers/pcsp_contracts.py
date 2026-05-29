@@ -49,13 +49,11 @@ BASE_SINDICACION = "https://contrataciondelsectorpublico.gob.es/sindicacion"
 # Base de cada feed (sin sufijo _{periodo}.zip)
 FEEDS = {
     "licitaciones": f"{BASE_SINDICACION}/sindicacion_643/licitacionesPerfilesContratanteCompleto3",
-    "agregacion":   f"{BASE_SINDICACION}/sindicacion_1044/PlataformasAgregadasSinMenores",
     "menores":      f"{BASE_SINDICACION}/sindicacion_1143/contratosMenoresPerfilesContratantes",
 }
 
 FEED_STATUS = {
     "licitaciones": "awarded",
-    "agregacion":   "awarded",
     "menores":      "awarded",
 }
 
