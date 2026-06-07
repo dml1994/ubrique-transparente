@@ -48,9 +48,9 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  awarded:     "Adjudicado",
-  published:   "Publicado",
-  cancelled:   "Cancelado",
+  awarded:     "Adjudicada",
+  published:   "Publicada",
+  cancelled:   "Anulada",
   in_progress: "En tramitación",
 };
 

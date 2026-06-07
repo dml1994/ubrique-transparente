@@ -3,9 +3,9 @@ import { getContractsForExport, labelContractType } from "@/lib/contracts";
 import type { ContractsFilter } from "@/lib/contracts";
 
 const STATUS_LABEL: Record<string, string> = {
-  awarded:     "Adjudicado",
-  published:   "Publicado",
-  cancelled:   "Cancelado",
+  awarded:     "Adjudicada",
+  published:   "Publicada",
+  cancelled:   "Anulada",
   in_progress: "En tramitación",
 };
 

@@ -64,10 +64,10 @@ export default function ContractsFilters({ types }: Props) {
         className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
         <option value="">Todos los estados</option>
-        <option value="awarded">Adjudicado</option>
-        <option value="published">Publicado</option>
+        <option value="awarded">Adjudicada</option>
+        <option value="published">Publicada</option>
         <option value="in_progress">En tramitación</option>
-        <option value="cancelled">Cancelado</option>
+        <option value="cancelled">Anulada</option>
       </select>
 
       {/* Ordenación */}

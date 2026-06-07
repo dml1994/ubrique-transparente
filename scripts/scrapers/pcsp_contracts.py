@@ -53,8 +53,20 @@ FEEDS = {
 }
 
 FEED_STATUS = {
-    "licitaciones": "awarded",
+    "licitaciones": "published",
     "menores":      "awarded",
+}
+
+# ContractFolderStatusCode → nuestro enum de BD
+PCSP_STATUS_MAP = {
+    "PUB":           "published",
+    "PRE_ADJ":       "in_progress",
+    "PREADJUDICADA": "in_progress",
+    "EVA":           "in_progress",
+    "ADJ":           "awarded",
+    "ANU":           "cancelled",
+    "DES":           "cancelled",
+    "DESIERTA":      "cancelled",
 }
 
 # Namespaces CODICE 2 usados en los ATOM de la PCSP
@@ -191,6 +203,16 @@ def _parse_awarded_to_nif(entry: ET.Element) -> Optional[str]:
     return None
 
 
+def _parse_status(entry: ET.Element, feed_type: str) -> str:
+    """Lee ContractFolderStatusCode del XML CODICE 2 y lo mapea a nuestro enum."""
+    for el in entry.iter():
+        if el.tag.split("}")[-1] == "ContractFolderStatusCode":
+            code = (el.text or "").strip().upper()
+            if code in PCSP_STATUS_MAP:
+                return PCSP_STATUS_MAP[code]
+    return FEED_STATUS.get(feed_type, "published")
+
+
 def _parse_amount(entry: ET.Element) -> Optional[float]:
     """Extrae el importe del contrato."""
     tags = [
@@ -267,7 +289,7 @@ def parse_entry(entry: ET.Element, feed_type: str) -> Optional[dict]:
         "awarded_date":   award_date,
         "published_date": published_date,
         "contract_type":  contract_type,
-        "status":         FEED_STATUS.get(feed_type, "published"),
+        "status":         _parse_status(entry, feed_type),
         "source_url":     source_url,
     }
 
