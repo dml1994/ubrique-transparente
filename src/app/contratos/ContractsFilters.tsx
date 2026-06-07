@@ -57,6 +57,19 @@ export default function ContractsFilters({ types }: Props) {
         ))}
       </select>
 
+      {/* Estado */}
+      <select
+        value={searchParams.get("status") ?? ""}
+        onChange={(e) => updateParam("status", e.target.value)}
+        className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+      >
+        <option value="">Todos los estados</option>
+        <option value="awarded">Adjudicado</option>
+        <option value="published">Publicado</option>
+        <option value="in_progress">En tramitación</option>
+        <option value="cancelled">Cancelado</option>
+      </select>
+
       {/* Ordenación */}
       <select
         value={`${searchParams.get("sort") ?? "publishedDate"}:${searchParams.get("order") ?? "desc"}`}
@@ -77,7 +90,7 @@ export default function ContractsFilters({ types }: Props) {
       </select>
 
       {/* Limpiar */}
-      {(searchParams.get("q") || searchParams.get("year") || searchParams.get("type")) && (
+      {(searchParams.get("q") || searchParams.get("year") || searchParams.get("type") || searchParams.get("status")) && (
         <button
           onClick={() => startTransition(() => router.push(pathname as Route))}
           className="px-3 py-2 text-sm text-gray-500 hover:text-gray-900 underline"

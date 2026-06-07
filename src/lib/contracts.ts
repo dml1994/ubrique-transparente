@@ -8,6 +8,7 @@ export type ContractsFilter = {
   q?: string;
   year?: string;
   type?: string;
+  status?: string;
   adjudicataria?: string;
   sort?: string;
   order?: "asc" | "desc";
@@ -66,6 +67,10 @@ export async function getContracts(filters: ContractsFilter) {
     conditions.push(eq(contracts.awardedTo, filters.adjudicataria));
   }
 
+  if (filters.status) {
+    conditions.push(eq(contracts.status, filters.status as "published" | "awarded" | "cancelled" | "in_progress"));
+  }
+
   const where = conditions.length ? and(...conditions) : undefined;
 
   const sortCol =
@@ -105,6 +110,7 @@ export async function getContractStats() {
     .select({
       total:       sql<number>`COUNT(*)`,
       totalAmount: sql<number>`COALESCE(SUM(${contracts.amount}), 0)`,
+      avgAmount:   sql<number>`COALESCE(AVG(${contracts.amount}), 0)`,
       lastUpdated: sql<string>`MAX(${contracts.updatedAt})`,
     })
     .from(contracts);
@@ -133,4 +139,32 @@ export async function getDistinctTypes(): Promise<string[]> {
         ORDER BY contract_type`
   );
   return (result.rows as Array<{ contract_type: string }>).map((r) => r.contract_type);
+}
+
+export async function getContractsForExport(filters: Omit<ContractsFilter, "page">): Promise<ContractRow[]> {
+  const conditions = [];
+
+  if (filters.q) {
+    const q = filters.q.slice(0, 120);
+    const term = `%${q}%`;
+    conditions.push(or(ilike(contracts.title, term), ilike(contracts.awardedTo, term)));
+  }
+  if (filters.year) {
+    conditions.push(sql`EXTRACT(YEAR FROM COALESCE(${contracts.awardedDate}, ${contracts.publishedDate})) = ${parseInt(filters.year, 10)}`);
+  }
+  if (filters.type) {
+    conditions.push(eq(contracts.contractType, filters.type));
+  }
+  if (filters.adjudicataria) {
+    conditions.push(eq(contracts.awardedTo, filters.adjudicataria));
+  }
+  if (filters.status) {
+    conditions.push(eq(contracts.status, filters.status as "published" | "awarded" | "cancelled" | "in_progress"));
+  }
+
+  const where = conditions.length ? and(...conditions) : undefined;
+  const sortCol = filters.sort === "amount" ? contracts.amount : filters.sort === "awardedDate" ? contracts.awardedDate : contracts.publishedDate;
+  const orderFn = filters.order === "asc" ? asc : desc;
+
+  return db.select().from(contracts).where(where).orderBy(orderFn(sortCol)).limit(5000);
 }

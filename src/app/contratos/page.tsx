@@ -80,7 +80,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Total contratos</p>
           <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1">
@@ -93,7 +93,13 @@ export default async function ContratosPage({ searchParams }: PageProps) {
             {fmt.format(Number(stats.totalAmount))}
           </p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 col-span-2 md:col-span-1">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <p className="text-xs text-gray-500 uppercase tracking-wide">Importe medio</p>
+          <p className="text-xl md:text-2xl font-bold text-violet-600 mt-1">
+            {fmt.format(Number(stats.avgAmount))}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Última actualización</p>
           <p className="text-base font-semibold text-gray-700 mt-1">
             {stats.lastUpdated
@@ -183,7 +189,8 @@ export default async function ContratosPage({ searchParams }: PageProps) {
         <ContractsFilters types={types} />
       </Suspense>
 
-      {/* Resultados count */}
+      {/* Resultados count + exportar */}
+      <div className="flex items-center justify-between gap-3">
       <div className="text-sm text-gray-500">
         {total === 0 ? (
           "No se encontraron contratos con los filtros aplicados."
@@ -192,6 +199,22 @@ export default async function ContratosPage({ searchParams }: PageProps) {
             <span className="font-medium text-gray-900">{total.toLocaleString("es-ES")}</span>{" "}
             contrato{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}
           </>
+        )}
+      </div>
+        {total > 0 && (
+          <a
+            href={`/api/contratos/export?${new URLSearchParams(
+              Object.fromEntries(
+                Object.entries(filters).filter(([, v]) => v != null) as [string, string][]
+              )
+            ).toString()}`}
+            className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-800 font-medium shrink-0"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            CSV
+          </a>
         )}
       </div>
 
