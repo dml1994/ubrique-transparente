@@ -3,3 +3,6 @@ allowBuilds:
   playwright-chromium: false
   sharp: true
   unrs-resolver: true
+
+overrides:
+  postcss: ">=8.5.10"
