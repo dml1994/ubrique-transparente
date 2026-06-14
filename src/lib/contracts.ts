@@ -36,6 +36,11 @@ export function labelContractType(code: string | null): string {
   return CONTRACT_TYPE_MAP[code] ?? code;
 }
 
+export async function getContractById(id: number) {
+  const rows = await db.select().from(contracts).where(eq(contracts.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
 export async function getContracts(filters: ContractsFilter) {
   const page = Math.min(500, Math.max(1, parseInt(filters.page ?? "1", 10)));
   const offset = (page - 1) * PAGE_SIZE;

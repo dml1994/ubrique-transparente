@@ -23,6 +23,8 @@ import {
   type ContractsFilter,
 } from "@/lib/contracts";
 import ContractsFilters from "./ContractsFilters";
+import { ContractRow } from "./ContractRow";
+import { StopPropagationLink } from "./StopPropagationLink";
 import Pagination from "@/components/Pagination";
 
 const fmt = new Intl.NumberFormat("es-ES", {
@@ -223,7 +225,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
           {/* Móvil: tarjetas */}
           <div className="md:hidden space-y-3">
             {rows.map((c) => (
-              <div key={c.id} className="bg-white rounded-xl border border-gray-200 p-4">
+              <a key={c.id} href={`/contratos/${c.id}`} className="block bg-white rounded-xl border border-gray-200 p-4 hover:border-brand-300 hover:shadow-sm transition-all">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${STATUS_BADGE[c.status ?? "published"] ?? "bg-gray-100 text-gray-700"}`}>
                     {STATUS_LABEL[c.status ?? "published"] ?? c.status}
@@ -234,25 +236,17 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                 </div>
                 <p className="font-medium text-gray-900 text-sm leading-snug">{c.title}</p>
                 {c.awardedTo ? (
-                  <a
-                    href={companyUrl(c.awardedTo, c.awardedToNif) ?? "#"}
-                    className="text-xs text-brand-600 hover:underline mt-1 block truncate"
-                  >
+                  <span className="text-xs text-brand-600 mt-1 block truncate">
                     {c.awardedTo}
-                  </a>
+                  </span>
                 ) : (
                   <span className="text-xs text-gray-400 italic mt-1 block">Sin adjudicar</span>
                 )}
                 <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                   <span>{fmtDate(c.publishedDate)}</span>
                   <span>{labelContractType(c.contractType)}</span>
-                  {c.sourceUrl && (
-                    <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" className="ml-auto text-brand-600 hover:underline">
-                      Ver en PCSP ↗
-                    </a>
-                  )}
                 </div>
-              </div>
+              </a>
             ))}
           </div>
 
@@ -273,21 +267,19 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {rows.map((c) => (
-                    <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                    <ContractRow key={c.id} id={c.id}>
                       <td className="px-4 py-3 text-xs text-gray-300 font-mono">{c.id}</td>
                       <td className="px-4 py-3">
                         <p className="font-medium text-gray-900 line-clamp-2 leading-snug">{c.title}</p>
-                        {c.sourceUrl && (
-                          <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-600 hover:underline mt-0.5 inline-block">
-                            Ver en PCSP ↗
-                          </a>
-                        )}
                       </td>
                       <td className="px-4 py-3 text-gray-700">
                         {c.awardedTo ? (
-                          <a href={companyUrl(c.awardedTo, c.awardedToNif) ?? "#"} className="hover:text-brand-600 transition-colors">
+                          <StopPropagationLink
+                            href={companyUrl(c.awardedTo, c.awardedToNif) ?? "#"}
+                            className="hover:text-brand-600 transition-colors"
+                          >
                             {c.awardedTo}
-                          </a>
+                          </StopPropagationLink>
                         ) : (
                           <span className="text-gray-400 italic">Sin adjudicar</span>
                         )}
@@ -302,7 +294,7 @@ export default async function ContratosPage({ searchParams }: PageProps) {
                           {STATUS_LABEL[c.status ?? "published"] ?? c.status}
                         </span>
                       </td>
-                    </tr>
+                    </ContractRow>
                   ))}
                 </tbody>
               </table>

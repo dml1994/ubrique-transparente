@@ -21,21 +21,38 @@ export async function getCompanies(year?: number): Promise<CompanyRow[]> {
     : sql``;
 
   const result = await db.execute(sql`
+    WITH base AS (
+      SELECT *,
+        TRIM(REGEXP_REPLACE(
+          REGEXP_REPLACE(
+            UPPER(TRIM(awarded_to)),
+            '([[:space:],]+(SLU|SAU|SL|SA|S[.]L[.]U[.]?|S[.]L[.]?|S[.]A[.]U[.]?|S[.]A[.]?)[[:space:],.]*)$',
+            ''
+          ),
+          '[^A-Z0-9 ]', '', 'g'
+        )) AS norm_name
+      FROM contracts
+      WHERE awarded_to IS NOT NULL AND awarded_to <> ''
+      ${yearFilter}
+    ),
+    enriched AS (
+      SELECT *,
+        COALESCE(
+          awarded_to_nif,
+          MAX(awarded_to_nif) OVER (PARTITION BY norm_name),
+          norm_name
+        ) AS group_key
+      FROM base
+    )
     SELECT
-      -- NIF como clave; para contratos sin NIF usamos nombre normalizado
-      COALESCE(awarded_to_nif,
-        REGEXP_REPLACE(UPPER(TRIM(awarded_to)), '[^A-Z0-9 ]', '', 'g')
-      )                                                                 AS nif,
-      -- Nombre canónico: la grafía de mayor importe
+      group_key                                                         AS nif,
       (ARRAY_AGG(awarded_to ORDER BY COALESCE(amount, 0) DESC))[1]     AS name,
       COUNT(*)::int                                                     AS contracts,
       COALESCE(SUM(amount), 0)::float                                   AS total_amount,
       MIN(EXTRACT(YEAR FROM COALESCE(awarded_date, published_date)))::int AS first_year,
       MAX(EXTRACT(YEAR FROM COALESCE(awarded_date, published_date)))::int AS last_year
-    FROM contracts
-    WHERE awarded_to IS NOT NULL AND awarded_to <> ''
-    ${yearFilter}
-    GROUP BY nif
+    FROM enriched
+    GROUP BY group_key
     ORDER BY total_amount DESC NULLS LAST, contracts DESC
     LIMIT 100
   `);
@@ -69,14 +86,32 @@ export async function getCompanyStats(year?: number): Promise<CompanyStats> {
     : sql``;
 
   const result = await db.execute(sql`
-    SELECT
-      COUNT(DISTINCT COALESCE(awarded_to_nif,
-        REGEXP_REPLACE(UPPER(TRIM(awarded_to)), '[^A-Z0-9 ]', '', 'g')
-      ))::int         AS total,
-      COALESCE(SUM(amount), 0)::float AS total_amount
-    FROM contracts
-    WHERE awarded_to IS NOT NULL AND awarded_to <> ''
-    ${yearFilter}
+    SELECT COUNT(DISTINCT group_key)::int AS total, COALESCE(SUM(amount), 0)::float AS total_amount
+    FROM (
+      WITH base AS (
+        SELECT amount,
+          TRIM(REGEXP_REPLACE(
+            REGEXP_REPLACE(
+              UPPER(TRIM(awarded_to)),
+              '([[:space:],]+(SLU|SAU|SL|SA|S[.]L[.]U[.]?|S[.]L[.]?|S[.]A[.]U[.]?|S[.]A[.]?)[[:space:],.]*)$',
+              ''
+            ),
+            '[^A-Z0-9 ]', '', 'g'
+          )) AS norm_name,
+          awarded_to_nif
+        FROM contracts
+        WHERE awarded_to IS NOT NULL AND awarded_to <> ''
+        ${yearFilter}
+      )
+      SELECT
+        COALESCE(
+          awarded_to_nif,
+          MAX(awarded_to_nif) OVER (PARTITION BY norm_name),
+          norm_name
+        ) AS group_key,
+        amount
+      FROM base
+    ) sub
   `);
 
   const row = result.rows[0] as { total: number; total_amount: number };
@@ -103,15 +138,36 @@ export type CompanyDetail = {
 };
 
 export async function getCompanyDetail(nif: string): Promise<CompanyDetail | null> {
+  const enrichedCte = sql`
+    WITH base AS (
+      SELECT *,
+        TRIM(REGEXP_REPLACE(
+          REGEXP_REPLACE(
+            UPPER(TRIM(awarded_to)),
+            '([[:space:],]+(SLU|SAU|SL|SA|S[.]L[.]U[.]?|S[.]L[.]?|S[.]A[.]U[.]?|S[.]A[.]?)[[:space:],.]*)$',
+            ''
+          ),
+          '[^A-Z0-9 ]', '', 'g'
+        )) AS norm_name
+      FROM contracts
+      WHERE awarded_to IS NOT NULL AND awarded_to <> ''
+    ),
+    enriched AS (
+      SELECT *,
+        COALESCE(
+          awarded_to_nif,
+          MAX(awarded_to_nif) OVER (PARTITION BY norm_name),
+          norm_name
+        ) AS group_key
+      FROM base
+    )
+  `;
+
   const result = await db.execute(sql`
-    SELECT
-      id, title, amount, awarded_date, published_date,
-      contract_type, status, source_url
-    FROM contracts
-    WHERE COALESCE(awarded_to_nif,
-        REGEXP_REPLACE(UPPER(TRIM(awarded_to)), '[^A-Z0-9 ]', '', 'g')
-      ) = ${nif}
-      AND awarded_to IS NOT NULL AND awarded_to <> ''
+    ${enrichedCte}
+    SELECT id, title, amount, awarded_date, published_date, contract_type, status, source_url
+    FROM enriched
+    WHERE group_key = ${nif}
     ORDER BY COALESCE(awarded_date, published_date) DESC NULLS LAST
   `);
 
@@ -124,17 +180,15 @@ export async function getCompanyDetail(nif: string): Promise<CompanyDetail | nul
   }>;
 
   const summary = await db.execute(sql`
+    ${enrichedCte}
     SELECT
       (ARRAY_AGG(awarded_to ORDER BY COALESCE(amount, 0) DESC))[1] AS name,
       COUNT(*)::int                                                  AS contracts,
       COALESCE(SUM(amount), 0)::float                               AS total_amount,
       MIN(EXTRACT(YEAR FROM COALESCE(awarded_date, published_date)))::int AS first_year,
       MAX(EXTRACT(YEAR FROM COALESCE(awarded_date, published_date)))::int AS last_year
-    FROM contracts
-    WHERE COALESCE(awarded_to_nif,
-        REGEXP_REPLACE(UPPER(TRIM(awarded_to)), '[^A-Z0-9 ]', '', 'g')
-      ) = ${nif}
-      AND awarded_to IS NOT NULL AND awarded_to <> ''
+    FROM enriched
+    WHERE group_key = ${nif}
   `);
 
   const s = summary.rows[0] as {
