@@ -40,6 +40,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://ubrique-transparente.vercel.app",
   },
+  other: {
+    "google-adsense-account": "ca-pub-9629242865969146",
+  },
 };
 
 export default function RootLayout({
