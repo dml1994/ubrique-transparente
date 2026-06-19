@@ -167,7 +167,7 @@ export async function getCompanyDetail(nif: string): Promise<CompanyDetail | nul
     ${enrichedCte}
     SELECT id, title, amount, awarded_date, published_date, contract_type, status, source_url
     FROM enriched
-    WHERE group_key = ${nif}
+    WHERE group_key = ${nif} OR norm_name = ${nif}
     ORDER BY COALESCE(awarded_date, published_date) DESC NULLS LAST
   `);
 
@@ -188,7 +188,7 @@ export async function getCompanyDetail(nif: string): Promise<CompanyDetail | nul
       MIN(EXTRACT(YEAR FROM COALESCE(awarded_date, published_date)))::int AS first_year,
       MAX(EXTRACT(YEAR FROM COALESCE(awarded_date, published_date)))::int AS last_year
     FROM enriched
-    WHERE group_key = ${nif}
+    WHERE group_key = ${nif} OR norm_name = ${nif}
   `);
 
   const s = summary.rows[0] as {
