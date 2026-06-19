@@ -35,7 +35,13 @@ const fmt = new Intl.NumberFormat("es-ES", {
 
 function companyUrl(awardedTo: string | null, awardedToNif: string | null): string | null {
   if (!awardedTo) return null;
-  const key = awardedToNif ?? awardedTo.trim().toUpperCase().replace(/[^A-Z0-9 ]/g, "");
+  if (awardedToNif) return `/empresas/${encodeURIComponent(awardedToNif)}`;
+  const key = awardedTo
+    .trim()
+    .toUpperCase()
+    .replace(/[\s,]+(SLU|SAU|SL|SA|S\.L\.U\.?|S\.L\.?|S\.A\.U\.?|S\.A\.?)[\s,.]*$/g, "")
+    .replace(/[^A-Z0-9 ]/g, "")
+    .trim();
   return `/empresas/${encodeURIComponent(key)}`;
 }
 
